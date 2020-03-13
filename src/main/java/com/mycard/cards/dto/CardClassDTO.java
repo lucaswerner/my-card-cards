@@ -1,6 +1,5 @@
 package com.mycard.cards.dto;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
 import com.mycard.cards.enumeration.CardBrand;
 import lombok.Data;
 
