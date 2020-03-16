@@ -6,6 +6,8 @@ import com.mycard.cards.entity.id.CardId;
 import com.mycard.cards.repository.CardRepository;
 import com.mycard.cards.service.CardClassService;
 import com.mycard.cards.service.CardService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -14,6 +16,8 @@ import java.util.Optional;
 
 @Service
 public class CardServiceImpl implements CardService {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(CardServiceImpl.class);
 
     @Autowired
     private CardRepository cardRepository;
@@ -43,6 +47,7 @@ public class CardServiceImpl implements CardService {
                 .orElseThrow(() -> new RuntimeException(String.format("Could not find Card Class with bin %s", bin)));
         card.setCardClass(cardClass);
 
+        LOGGER.info("Saving new card!");
         return cardRepository.save(card);
     }
 
@@ -56,6 +61,7 @@ public class CardServiceImpl implements CardService {
 
         final Card cardFromDB = optionalCardFromDB.get();
         cardFromDB.setFeature(card.getFeature());
+        LOGGER.info("Updating card");
         return Optional.of(cardRepository.save(cardFromDB));
     }
 }

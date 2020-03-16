@@ -1,9 +1,6 @@
 package com.mycard.cards.config;
 
-import com.mycard.cards.property.map.CardFeeToCardFeeDTO;
-import com.mycard.cards.property.map.CardToCardDTO;
-import com.mycard.cards.property.map.PostCardDTOToCard;
-import com.mycard.cards.property.map.PostCardFeeDTOToCardFee;
+import com.mycard.cards.property.map.*;
 import org.modelmapper.ModelMapper;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -21,6 +18,7 @@ public class ModelMapperConfig {
 
         // card
         modelMapper.addMappings(new CardToCardDTO());
+        modelMapper.addMappings(new CardDTOToCard());
         modelMapper.addMappings(new PostCardDTOToCard());
 
         return modelMapper;

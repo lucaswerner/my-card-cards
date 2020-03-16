@@ -1,6 +1,6 @@
 spring:
   application:
-    name: 'cards'
+    name: 'my-card-cards'
   jpa:
     hibernate:
       ddl-auto: update
