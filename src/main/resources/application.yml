@@ -1,9 +1,14 @@
 spring:
-  application:
-    name: 'my-card-cards'
+  datasource:
+    type: com.mchange.v2.c3p0.ComboPooledDataSource
+    url: jdbc:mysql://localhost:3306/my_card_cards?useSSL=false&useTimezone=true&serverTimezone=UTC&allowPublicKeyRetrieval=true
+    username: root
+    password: mypassword
   jpa:
     hibernate:
       ddl-auto: update
+  application:
+    name: 'my-card-cards'
 
 server:
   port: 8080
