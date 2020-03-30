@@ -6,6 +6,7 @@ import com.mycard.cards.entity.id.CardId;
 import com.mycard.cards.repository.CardRepository;
 import com.mycard.cards.service.CardClassService;
 import com.mycard.cards.service.CardService;
+import com.netflix.hystrix.contrib.javanica.annotation.HystrixCommand;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,16 +32,19 @@ public class CardServiceImpl implements CardService {
     }
 
     @Override
+    @HystrixCommand(threadPoolKey = "getCardThreadPool")
     public Optional<Card> getCard(CardId id) {
         return cardRepository.findById(id);
     }
 
     @Override
+    @HystrixCommand(threadPoolKey = "getCardListThreadPool")
     public List<Card> getCardList() {
         return cardRepository.findAll();
     }
 
     @Override
+    @HystrixCommand(threadPoolKey = "saveCardThreadPool")
     public Card saveCard(Card card) {
         final Long bin = card.getCompositeId().getBin();
         final CardClass cardClass = cardClassService.getCardClass(bin)
@@ -52,6 +56,7 @@ public class CardServiceImpl implements CardService {
     }
 
     @Override
+    @HystrixCommand(threadPoolKey = "updateCardThreadPool")
     public Optional<Card> updateCard(Card card) {
         final Optional<Card> optionalCardFromDB = this.getCard(card.getCompositeId());
 

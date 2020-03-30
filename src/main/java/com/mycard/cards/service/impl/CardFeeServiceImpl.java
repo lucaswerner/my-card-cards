@@ -6,6 +6,7 @@ import com.mycard.cards.entity.id.CardFeeId;
 import com.mycard.cards.repository.CardFeeRepository;
 import com.mycard.cards.service.CardClassService;
 import com.mycard.cards.service.CardFeeService;
+import com.netflix.hystrix.contrib.javanica.annotation.HystrixCommand;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -27,16 +28,19 @@ public class CardFeeServiceImpl implements CardFeeService {
     }
 
     @Override
+    @HystrixCommand(threadPoolKey = "getCardFeeThreadPool")
     public Optional<CardFee> getCardFee(CardFeeId cardFeeId) {
         return cardFeeRepository.findById(cardFeeId);
     }
 
     @Override
+    @HystrixCommand(threadPoolKey = "getCardFeeListThreadPool")
     public List<CardFee> getCardFeeList() {
         return cardFeeRepository.findAll();
     }
 
     @Override
+    @HystrixCommand(threadPoolKey = "saveCardFeeThreadPool")
     public CardFee saveCardFee(CardFee cardFee) {
         final Long bin = cardFee.getCompositeId().getBin();
         final CardClass cardClass = cardClassService.getCardClass(bin)
@@ -47,6 +51,7 @@ public class CardFeeServiceImpl implements CardFeeService {
     }
 
     @Override
+    @HystrixCommand(threadPoolKey = "updateCardFeeThreadPool")
     public Optional<CardFee> updateCardFee(CardFee cardFee) {
         final Optional<CardFee> optionalCardFeeFromDB = this.getCardFee(cardFee.getCompositeId());
 
