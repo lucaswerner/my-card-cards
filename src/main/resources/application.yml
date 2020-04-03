@@ -22,3 +22,8 @@ hystrix:
         isolation:
           thread:
             timeoutInMilliseconds: 3000
+
+security:
+  oauth2:
+    resource:
+      user-info-uri: http://localhost:8088/user
