@@ -16,4 +16,5 @@ class PostCardDTO {
     private LocalDate expiration;
     private LocalDateTime validFrom;
     private CardFeature feature;
+    private Long userId;
 }

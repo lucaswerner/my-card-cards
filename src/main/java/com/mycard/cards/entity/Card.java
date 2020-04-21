@@ -14,7 +14,7 @@ public @Data
 class Card {
 
     @EmbeddedId
-    private CardId compositeId;
+    private CardId cardId;
 
     @Column(nullable = false, name = "expiration")
     private LocalDate expiration;
@@ -24,6 +24,9 @@ class Card {
 
     @Column(nullable = false, name = "feature")
     private CardFeature feature;
+
+    @Column(nullable = false, name = "userId")
+    private Long userId;
 
     @ManyToOne
     @MapsId("bin")

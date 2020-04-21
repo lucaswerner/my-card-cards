@@ -10,6 +10,7 @@ import com.netflix.hystrix.contrib.javanica.annotation.HystrixCommand;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -46,7 +47,7 @@ public class CardServiceImpl implements CardService {
     @Override
     @HystrixCommand(threadPoolKey = "saveCardThreadPool")
     public Card saveCard(Card card) {
-        final Long bin = card.getCompositeId().getBin();
+        final Long bin = card.getCardId().getBin();
         final CardClass cardClass = cardClassService.getCardClass(bin)
                 .orElseThrow(() -> new RuntimeException(String.format("Could not find Card Class with bin %s", bin)));
         card.setCardClass(cardClass);
@@ -58,7 +59,7 @@ public class CardServiceImpl implements CardService {
     @Override
     @HystrixCommand(threadPoolKey = "updateCardThreadPool")
     public Optional<Card> updateCard(Card card) {
-        final Optional<Card> optionalCardFromDB = this.getCard(card.getCompositeId());
+        final Optional<Card> optionalCardFromDB = this.getCard(card.getCardId());
 
         if (optionalCardFromDB.isEmpty()) {
             return optionalCardFromDB;
@@ -69,4 +70,18 @@ public class CardServiceImpl implements CardService {
         LOGGER.info("Updating card");
         return Optional.of(cardRepository.save(cardFromDB));
     }
+
+    @Override
+    @HystrixCommand(threadPoolKey = "userCardListThreadPool")
+    public List<Card> getUserCardList(Long userId, Pageable pageable) {
+        return cardRepository.findAllByUserId(userId, pageable);
+    }
+
+    @Override
+    @HystrixCommand(threadPoolKey = "userCardThreadPool")
+    public Optional<Card> getUserCard(CardId id, Long userId) {
+        return cardRepository.findByCardIdAndUserId(id, userId);
+    }
+
+
 }
