@@ -69,14 +69,7 @@ public class CardController {
             @PathVariable("number") Long number,
             Authentication authentication
     ) {
-        final Optional<Card> optionalCard = this.cardService.getUserCard(
-                new CardId(bin, number),
-                ((PrincipalDTO) authentication.getPrincipal()).getId()
-        );
-
-        return optionalCard
-                .map(card -> ResponseEntity.ok().body(this.modelMapper.map(card, CardDTO.class)))
-                .orElseGet(() -> ResponseEntity.noContent().build());
+        return getCard(bin, number, ((PrincipalDTO) authentication.getPrincipal()).getId());
     }
 
     @PostMapping
@@ -108,5 +101,22 @@ public class CardController {
         return optionalCard
                 .map(card -> ResponseEntity.ok().body(this.modelMapper.map(card, CardDTO.class)))
                 .orElseGet(() -> ResponseEntity.status(409).build());
+    }
+
+    @GetMapping("/{bin}/{number}/{userId}")
+    @ApiOperation(value = "GetCard")
+    @ApiResponses(value = {
+            @ApiResponse(code = 400, message = "Something went wrong"),
+    })
+    public ResponseEntity<CardDTO> getCard(
+            @PathVariable("bin") Long bin,
+            @PathVariable("number") Long number,
+            @PathVariable("userId") Long userId
+    ) {
+        final Optional<Card> optionalCard = this.cardService.getUserCard(new CardId(bin, number), userId);
+
+        return optionalCard
+                .map(card -> ResponseEntity.ok().body(this.modelMapper.map(card, CardDTO.class)))
+                .orElseGet(() -> ResponseEntity.noContent().build());
     }
 }

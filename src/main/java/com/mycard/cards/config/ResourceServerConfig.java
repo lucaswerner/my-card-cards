@@ -14,6 +14,7 @@ public class ResourceServerConfig extends ResourceServerConfigurerAdapter {
                 .httpBasic()
                 .and()
                 .authorizeRequests()
+                .antMatchers("/cards/{bin}/{number}/{userId}").hasAnyRole("ADMIN", "SYSTEM")
                 .antMatchers(HttpMethod.POST).hasAuthority("WRITE_CARD")
                 .antMatchers(HttpMethod.GET).hasAuthority("READ_CARD")
                 .antMatchers(HttpMethod.PUT).hasAuthority("UPDATE_CARD");
