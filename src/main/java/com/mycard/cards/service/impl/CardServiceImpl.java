@@ -9,10 +9,10 @@ import com.mycard.cards.service.CardService;
 import com.netflix.hystrix.contrib.javanica.annotation.HystrixCommand;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -20,11 +20,9 @@ import java.util.Optional;
 public class CardServiceImpl implements CardService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(CardServiceImpl.class);
+    private static final String CACHE_NAME = "CardService";
 
-    @Autowired
     private CardRepository cardRepository;
-
-    @Autowired
     private CardClassService cardClassService;
 
     public CardServiceImpl(CardRepository cardRepository, CardClassService cardClassService) {
@@ -32,22 +30,23 @@ public class CardServiceImpl implements CardService {
         this.cardClassService = cardClassService;
     }
 
-    @Override
-    @HystrixCommand(threadPoolKey = "getCardThreadPool")
     public Optional<Card> getCard(CardId id) {
         return cardRepository.findById(id);
     }
 
     @Override
+//    @Cacheable(cacheNames = CACHE_NAME, key = "#root.method.name")
     @HystrixCommand(threadPoolKey = "getCardListThreadPool")
     public List<Card> getCardList() {
-        return cardRepository.findAll();
+        return new ArrayList<>();
+//        return cardRepository.findAll();
     }
 
     @Override
+//    @CacheEvict(cacheNames = CACHE_NAME, allEntries = true)
     @HystrixCommand(threadPoolKey = "saveCardThreadPool")
     public Card saveCard(Card card) {
-        final Long bin = card.getCardId().getBin();
+        final Long bin = card.getBin();
         final CardClass cardClass = cardClassService.getCardClass(bin)
                 .orElseThrow(() -> new RuntimeException(String.format("Could not find Card Class with bin %s", bin)));
         card.setCardClass(cardClass);
@@ -57,9 +56,10 @@ public class CardServiceImpl implements CardService {
     }
 
     @Override
+//    @CachePut(cacheNames = CACHE_NAME, key = "#card.getCardId()")
     @HystrixCommand(threadPoolKey = "updateCardThreadPool")
     public Optional<Card> updateCard(Card card) {
-        final Optional<Card> optionalCardFromDB = this.getCard(card.getCardId());
+        final Optional<Card> optionalCardFromDB = this.getCard(new CardId(card.getBin(), card.getNumber()));
 
         if (optionalCardFromDB.isEmpty()) {
             return optionalCardFromDB;
@@ -72,15 +72,17 @@ public class CardServiceImpl implements CardService {
     }
 
     @Override
+//    @Cacheable(cacheNames = CACHE_NAME, key = "{#userId, #pageable}")
     @HystrixCommand(threadPoolKey = "userCardListThreadPool")
     public List<Card> getUserCardList(Long userId, Pageable pageable) {
         return cardRepository.findAllByUserId(userId, pageable);
     }
 
     @Override
+//    @Cacheable(cacheNames = CACHE_NAME, key = "{#id, #userId}")
     @HystrixCommand(threadPoolKey = "userCardThreadPool")
     public Optional<Card> getUserCard(CardId id, Long userId) {
-        return cardRepository.findByCardIdAndUserId(id, userId);
+        return cardRepository.findByBinAndNumberAndUserId(id.getBin(), id.getNumber(), userId);
     }
 
 

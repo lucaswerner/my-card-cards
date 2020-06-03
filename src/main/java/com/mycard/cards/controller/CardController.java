@@ -79,12 +79,11 @@ public class CardController {
     })
     public ResponseEntity<CardDTO> saveCard(@Valid @RequestBody PostCardDTO postCardDTO, HttpServletRequest request) {
         final Card savedCard = this.cardService.saveCard(this.modelMapper.map(postCardDTO, Card.class));
-        final CardId compositeId = savedCard.getCardId();
 
         final URI location = URI.create(String.format(
                 request.getRequestURI() + "/%s/%s",
-                compositeId.getBin(),
-                compositeId.getNumber()));
+                savedCard.getBin(),
+                savedCard.getNumber()));
 
         return ResponseEntity.created(location).body(this.modelMapper.map(savedCard, CardDTO.class));
     }

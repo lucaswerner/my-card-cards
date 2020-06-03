@@ -5,16 +5,23 @@ import com.mycard.cards.enumeration.CardFeature;
 import lombok.Data;
 
 import javax.persistence.*;
+import java.io.Serializable;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "card")
+@IdClass(CardId.class)
 public @Data
-class Card {
+class Card implements Serializable {
 
-    @EmbeddedId
-    private CardId cardId;
+    @Id
+    @Column(nullable = false, name = "bin")
+    private Long bin;
+
+    @Id
+    @Column(nullable = false, name = "number")
+    private Long number;
 
     @Column(nullable = false, name = "expiration")
     private LocalDate expiration;

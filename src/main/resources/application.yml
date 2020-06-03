@@ -1,9 +1,24 @@
 spring:
+  main:
+    allow-bean-definition-overriding: true
   datasource:
+    url: jdbc:mysql://localhost:3306/my_card_cards?useSSL=false&useTimezone=true&serverTimezone=UTC&allowPublicKeyRetrieval=true
+    username: root
+    password: mypassword
     type: com.mchange.v2.c3p0.ComboPooledDataSource
   jpa:
     hibernate:
       ddl-auto: update
+    open-in-view: true
+  cloud:
+    loadbalancer:
+      ribbon:
+        enabled: true
+  cache:
+    type: redis
+  redis:
+    host: localhost
+    port: 6279
 
 server:
   port: 8080
@@ -29,3 +44,4 @@ security:
       service-id: my-card-auth
       user-info-uri: http://${security.oauth2.resource.service-id}/user
       loadBalanced: true
+
