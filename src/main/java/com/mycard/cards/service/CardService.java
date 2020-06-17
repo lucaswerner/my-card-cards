@@ -21,9 +21,9 @@ public interface CardService {
 
     Optional<Card> getUserCard(CardId id, Long userId);
 
-    List<CardDTO> getUserCardDTOList(CardDTO cardDTO);
+    List<CardDTO> getUserCardDTOList(Long userId);
 
-    Optional<CardDTO> getUserCardDTO(CardDTO cardDTo);
+    Optional<CardDTO> getUserCardDTO(CardId cardId, Long userId);
 
     CardDTO saveCardDTO(PostCardDTO postCardDTO);
 

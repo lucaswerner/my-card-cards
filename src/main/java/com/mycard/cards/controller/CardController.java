@@ -3,6 +3,7 @@ package com.mycard.cards.controller;
 import com.mycard.cards.dto.CardDTO;
 import com.mycard.cards.dto.PostCardDTO;
 import com.mycard.cards.dto.PrincipalDTO;
+import com.mycard.cards.entity.id.CardId;
 import com.mycard.cards.service.CardService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -16,7 +17,6 @@ import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 import java.net.URI;
 import java.util.List;
-import java.util.Optional;
 
 @RestController
 @RequestMapping("cards")
@@ -35,12 +35,9 @@ public class CardController {
             @ApiResponse(code = 400, message = "Something went wrong")
     })
     public ResponseEntity<List<CardDTO>> getUserCardList(Authentication authentication) {
-        return ResponseEntity.ok()
-                .body(cardService.getUserCardDTOList(
-                        CardDTO.builder()
-                                .userId(((PrincipalDTO) authentication.getPrincipal()).getId())
-                                .build()
-                ));
+        return ResponseEntity
+                .ok()
+                .body(cardService.getUserCardDTOList(((PrincipalDTO) authentication.getPrincipal()).getId()));
     }
 
     @GetMapping("/{bin}/{number}")
@@ -95,14 +92,7 @@ public class CardController {
             @PathVariable("number") Long number,
             @PathVariable("userId") Long userId
     ) {
-        final Optional<CardDTO> optionalCard = this.cardService.getUserCardDTO(
-                CardDTO.builder()
-                        .bin(bin)
-                        .number(number)
-                        .userId(userId)
-                        .build());
-
-        return optionalCard
+        return this.cardService.getUserCardDTO(new CardId(bin, number), userId)
                 .map(card -> ResponseEntity.ok().body(card))
                 .orElseGet(() -> ResponseEntity.noContent().build());
     }

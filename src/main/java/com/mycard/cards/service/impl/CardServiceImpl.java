@@ -78,22 +78,19 @@ public class CardServiceImpl implements CardService {
         return cardRepository.findByCardIdAndUserId(id, userId);
     }
 
-    @Cacheable(key = "{#cardDTO.userId}")
+    @Cacheable(key = "{#userId}")
     @HystrixCommand(threadPoolKey = "userCardDTOListThreadPool")
-    public List<CardDTO> getUserCardDTOList(CardDTO cardDTO) {
+    public List<CardDTO> getUserCardDTOList(Long userId) {
         return this.modelMapper.map(
-                this.getUserCardList(cardDTO.getUserId()),
+                this.getUserCardList(userId),
                 new TypeToken<List<CardDTO>>() {
                 }.getType());
     }
 
-    @Cacheable(key = "{#cardDTO.bin, #cardDTO.number, #cardDTO.userId}")
+    @Cacheable(key = "{#cardId.bin, #cardId.number, #userId}")
     @HystrixCommand(threadPoolKey = "userCardDTOThreadPool")
-    public Optional<CardDTO> getUserCardDTO(CardDTO cardDTO) {
-        return this.getUserCard(
-                new CardId(cardDTO.getBin(), cardDTO.getNumber()),
-                cardDTO.getUserId()
-        )
+    public Optional<CardDTO> getUserCardDTO(CardId cardId, Long userId) {
+        return this.getUserCard(cardId, userId)
                 .map(card -> this.modelMapper.map(card, CardDTO.class));
     }
 
