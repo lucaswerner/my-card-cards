@@ -3,17 +3,11 @@ package com.mycard.cards.controller;
 import com.mycard.cards.dto.CardDTO;
 import com.mycard.cards.dto.PostCardDTO;
 import com.mycard.cards.dto.PrincipalDTO;
-import com.mycard.cards.entity.Card;
-import com.mycard.cards.entity.id.CardId;
 import com.mycard.cards.service.CardService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
-import org.modelmapper.ModelMapper;
-import org.modelmapper.TypeToken;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
@@ -29,15 +23,10 @@ import java.util.Optional;
 @Api(tags = "card")
 public class CardController {
 
-    @Autowired
     private CardService cardService;
 
-    @Autowired
-    private ModelMapper modelMapper;
-
-    public CardController(CardService cardService, ModelMapper modelMapper) {
+    public CardController(CardService cardService) {
         this.cardService = cardService;
-        this.modelMapper = modelMapper;
     }
 
     @GetMapping
@@ -45,17 +34,13 @@ public class CardController {
     @ApiResponses(value = {
             @ApiResponse(code = 400, message = "Something went wrong")
     })
-    public ResponseEntity<List<CardDTO>> getUserCardList(
-            @RequestParam("pageSize") Integer pageSize,
-            @RequestParam("pageNumber") Integer pageNumber,
-            Authentication authentication
-    ) {
-        final List<Card> userCardList = cardService.getUserCardList(
-                ((PrincipalDTO) authentication.getPrincipal()).getId(),
-                PageRequest.of(pageNumber, pageSize)
-        );
-        return ResponseEntity.ok().body(this.modelMapper.map(userCardList, new TypeToken<List<CardDTO>>() {
-        }.getType()));
+    public ResponseEntity<List<CardDTO>> getUserCardList(Authentication authentication) {
+        return ResponseEntity.ok()
+                .body(cardService.getUserCardDTOList(
+                        CardDTO.builder()
+                                .userId(((PrincipalDTO) authentication.getPrincipal()).getId())
+                                .build()
+                ));
     }
 
     @GetMapping("/{bin}/{number}")
@@ -69,7 +54,7 @@ public class CardController {
             @PathVariable("number") Long number,
             Authentication authentication
     ) {
-        return getCard(bin, number, ((PrincipalDTO) authentication.getPrincipal()).getId());
+        return this.getCard(bin, number, ((PrincipalDTO) authentication.getPrincipal()).getId());
     }
 
     @PostMapping
@@ -78,15 +63,14 @@ public class CardController {
             @ApiResponse(code = 400, message = "Something went wrong")
     })
     public ResponseEntity<CardDTO> saveCard(@Valid @RequestBody PostCardDTO postCardDTO, HttpServletRequest request) {
-        final Card savedCard = this.cardService.saveCard(this.modelMapper.map(postCardDTO, Card.class));
-        final CardId compositeId = savedCard.getCardId();
+        final CardDTO savedCardDTO = this.cardService.saveCardDTO(postCardDTO);
 
         final URI location = URI.create(String.format(
                 request.getRequestURI() + "/%s/%s",
-                compositeId.getBin(),
-                compositeId.getNumber()));
+                savedCardDTO.getBin(),
+                savedCardDTO.getNumber()));
 
-        return ResponseEntity.created(location).body(this.modelMapper.map(savedCard, CardDTO.class));
+        return ResponseEntity.created(location).body(savedCardDTO);
     }
 
     @PutMapping
@@ -96,10 +80,8 @@ public class CardController {
             @ApiResponse(code = 409, message = "Unable to find Card for update")
     })
     public ResponseEntity<CardDTO> putCard(@Valid @RequestBody CardDTO cardDTO) {
-        final Optional<Card> optionalCard = this.cardService.updateCard(this.modelMapper.map(cardDTO, Card.class));
-
-        return optionalCard
-                .map(card -> ResponseEntity.ok().body(this.modelMapper.map(card, CardDTO.class)))
+        return this.cardService.updateCardDTO(cardDTO)
+                .map(card -> ResponseEntity.ok().body(card))
                 .orElseGet(() -> ResponseEntity.status(409).build());
     }
 
@@ -113,10 +95,15 @@ public class CardController {
             @PathVariable("number") Long number,
             @PathVariable("userId") Long userId
     ) {
-        final Optional<Card> optionalCard = this.cardService.getUserCard(new CardId(bin, number), userId);
+        final Optional<CardDTO> optionalCard = this.cardService.getUserCardDTO(
+                CardDTO.builder()
+                        .bin(bin)
+                        .number(number)
+                        .userId(userId)
+                        .build());
 
         return optionalCard
-                .map(card -> ResponseEntity.ok().body(this.modelMapper.map(card, CardDTO.class)))
+                .map(card -> ResponseEntity.ok().body(card))
                 .orElseGet(() -> ResponseEntity.noContent().build());
     }
 }

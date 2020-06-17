@@ -5,13 +5,15 @@ import lombok.Data;
 
 import javax.persistence.*;
 import javax.validation.constraints.Size;
+import java.io.Serializable;
 import java.util.List;
 
 @Entity
 @Table(name = "card_class")
 public @Data
-class CardClass {
+class CardClass implements Serializable {
 
+    private static final long serialVersionUID = -9107050725091792944L;
     @Id
     @GeneratedValue
     @Column(name = "bin")

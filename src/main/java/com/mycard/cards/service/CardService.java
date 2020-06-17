@@ -1,8 +1,9 @@
 package com.mycard.cards.service;
 
+import com.mycard.cards.dto.CardDTO;
+import com.mycard.cards.dto.PostCardDTO;
 import com.mycard.cards.entity.Card;
 import com.mycard.cards.entity.id.CardId;
-import org.springframework.data.domain.Pageable;
 
 import java.util.List;
 import java.util.Optional;
@@ -16,7 +17,15 @@ public interface CardService {
 
     Optional<Card> updateCard(Card card);
 
-    List<Card> getUserCardList(Long userId, Pageable pageable);
+    List<Card> getUserCardList(Long userId);
 
     Optional<Card> getUserCard(CardId id, Long userId);
+
+    List<CardDTO> getUserCardDTOList(CardDTO cardDTO);
+
+    Optional<CardDTO> getUserCardDTO(CardDTO cardDTo);
+
+    CardDTO saveCardDTO(PostCardDTO postCardDTO);
+
+    Optional<CardDTO> updateCardDTO(CardDTO cardDTO);
 }

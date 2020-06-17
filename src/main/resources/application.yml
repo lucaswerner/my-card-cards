@@ -2,8 +2,19 @@ spring:
   datasource:
     type: com.mchange.v2.c3p0.ComboPooledDataSource
   jpa:
+    show-sql: true
     hibernate:
       ddl-auto: update
+    open-in-view: false
+  cloud:
+    loadbalancer:
+      ribbon:
+        enabled: true
+  cache:
+    type: redis
+  redis:
+    host: localhost
+    port: 6279
 
 server:
   port: 8080
@@ -29,3 +40,9 @@ security:
       service-id: my-card-auth
       user-info-uri: http://${security.oauth2.resource.service-id}/user
       loadBalanced: true
+
+logging:
+  level:
+    org:
+      springframework:
+        cache: TRACE

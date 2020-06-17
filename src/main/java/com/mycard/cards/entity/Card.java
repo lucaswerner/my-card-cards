@@ -5,13 +5,16 @@ import com.mycard.cards.enumeration.CardFeature;
 import lombok.Data;
 
 import javax.persistence.*;
+import java.io.Serializable;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "card")
 public @Data
-class Card {
+class Card implements Serializable {
+
+    private static final long serialVersionUID = -3106559627256167600L;
 
     @EmbeddedId
     private CardId cardId;
@@ -28,7 +31,7 @@ class Card {
     @Column(nullable = false, name = "userId")
     private Long userId;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @MapsId("bin")
     @JoinColumn(name = "bin", referencedColumnName = "bin")
     private CardClass cardClass;
