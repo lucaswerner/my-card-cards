@@ -108,7 +108,7 @@ public class CardServiceImpl implements CardService {
 
     @Caching(
             evict = {
-                    @CacheEvict(key = "{#cardDTO.userId}", beforeInvocation = true)
+                    @CacheEvict(key = "{#cardDTO.userId}")
             },
             put = {
                     @CachePut(key = "{#cardDTO.bin, #cardDTO.number, #cardDTO.userId}")
