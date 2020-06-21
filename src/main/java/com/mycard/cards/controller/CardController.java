@@ -9,6 +9,8 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
@@ -82,7 +84,7 @@ public class CardController {
                 .orElseGet(() -> ResponseEntity.status(409).build());
     }
 
-    @GetMapping("/{bin}/{number}/{userId}")
+    @GetMapping("/admin/{bin}/{number}/{userId}")
     @ApiOperation(value = "GetCard")
     @ApiResponses(value = {
             @ApiResponse(code = 400, message = "Something went wrong"),
@@ -96,4 +98,19 @@ public class CardController {
                 .map(card -> ResponseEntity.ok().body(card))
                 .orElseGet(() -> ResponseEntity.noContent().build());
     }
+
+    @GetMapping("/admin")
+    @ApiOperation(value = "GetCardList")
+    @ApiResponses(value = {
+            @ApiResponse(code = 400, message = "Something went wrong")
+    })
+    public ResponseEntity<Page<CardDTO>> getCardList(
+            @RequestParam("pageSize") Integer pageSize,
+            @RequestParam("pageNumber") Integer pageNumber
+    ) {
+        return ResponseEntity
+                .ok()
+                .body(this.cardService.getCardDTOPage(PageRequest.of(pageNumber, pageSize)));
+    }
+
 }

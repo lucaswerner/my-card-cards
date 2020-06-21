@@ -4,14 +4,14 @@ import com.mycard.cards.dto.CardDTO;
 import com.mycard.cards.dto.PostCardDTO;
 import com.mycard.cards.entity.Card;
 import com.mycard.cards.entity.id.CardId;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 import java.util.List;
 import java.util.Optional;
 
 public interface CardService {
-    Optional<Card> getCard(CardId id);
-
-    List<Card> getCardList();
+    List<Card> getCardList(Pageable pageable);
 
     Card saveCard(Card card);
 
@@ -28,4 +28,6 @@ public interface CardService {
     CardDTO saveCardDTO(PostCardDTO postCardDTO);
 
     Optional<CardDTO> updateCardDTO(CardDTO cardDTO);
+
+    Page<CardDTO> getCardDTOPage(Pageable pageable);
 }

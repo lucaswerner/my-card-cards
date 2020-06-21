@@ -14,6 +14,8 @@ import org.modelmapper.TypeToken;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.cache.annotation.*;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -35,16 +37,12 @@ public class CardServiceImpl implements CardService {
         this.modelMapper = modelMapper;
     }
 
-    //    @Cacheable(cacheNames = CACHE_NAME, key = "#id")
-    @HystrixCommand(threadPoolKey = "getCardThreadPool")
-    public Optional<Card> getCard(CardId id) {
-        return cardRepository.findById(id);
+    public Page<Card> getCardPage(Pageable pageable) {
+        return cardRepository.findAll(pageable);
     }
 
-    //    @Cacheable(cacheNames = CACHE_NAME, key = "#root.method.name")
-    @HystrixCommand(threadPoolKey = "getCardListThreadPool")
-    public List<Card> getCardList() {
-        return cardRepository.findAll();
+    public List<Card> getCardList(Pageable pageable) {
+        return getCardPage(pageable).getContent();
     }
 
     public Card saveCard(Card card) {
@@ -78,13 +76,17 @@ public class CardServiceImpl implements CardService {
         return cardRepository.findByCardIdAndUserId(id, userId);
     }
 
+    private List<CardDTO> cardListToCardDTOList(List<Card> userCardList) {
+        return this.modelMapper.map(
+                userCardList,
+                new TypeToken<List<CardDTO>>() {
+                }.getType());
+    }
+
     @Cacheable(key = "{#userId}")
     @HystrixCommand(threadPoolKey = "userCardDTOListThreadPool")
     public List<CardDTO> getUserCardDTOList(Long userId) {
-        return this.modelMapper.map(
-                this.getUserCardList(userId),
-                new TypeToken<List<CardDTO>>() {
-                }.getType());
+        return cardListToCardDTOList(getUserCardList(userId));
     }
 
     @Cacheable(key = "{#cardId.bin, #cardId.number, #userId}")
@@ -115,6 +117,12 @@ public class CardServiceImpl implements CardService {
     public Optional<CardDTO> updateCardDTO(CardDTO cardDTO) {
         return this.updateCard(this.modelMapper.map(cardDTO, Card.class))
                 .map(card -> this.modelMapper.map(card, CardDTO.class));
+    }
+
+    @HystrixCommand(threadPoolKey = "adminCardDTOPageThreadPool")
+    public Page<CardDTO> getCardDTOPage(Pageable pageable) {
+        return getCardPage(pageable)
+                .map(card -> modelMapper.map(card, CardDTO.class));
     }
 
 }
