@@ -13,8 +13,17 @@ spring:
   cache:
     type: redis
   redis:
+    client-name: my-card-redis
     host: localhost
-    port: 6279
+    port: 6379
+    timeout: 60000
+    password: redispass
+    lettuce:
+      pool:
+        max-active: 50
+        max-idle: 50
+        max-wait: 50ms
+        min-idle: 0
 
 server:
   port: 8080
