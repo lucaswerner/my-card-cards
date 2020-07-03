@@ -9,14 +9,14 @@ spring:
   cloud:
     loadbalancer:
       ribbon:
-        enabled: true
+        enabled: false
   cache:
     type: redis
   redis:
     client-name: my-card-redis
     host: localhost
     port: 6379
-    timeout: 60000
+    timeout: 2000
     password: redispass
     lettuce:
       pool:
@@ -42,6 +42,19 @@ hystrix:
         isolation:
           thread:
             timeoutInMilliseconds: 3000
+  threadpool:
+    default:
+      coreSize: 8
+      maximumSize: 8
+#  threadpool:
+#    userCardDTOListThreadPool:
+#      coreSize: 8
+#      maximumSize: 8
+
+ribbon:
+  eager-load:
+    enabled: true
+    clients: my-card-auth
 
 security:
   oauth2:
@@ -55,3 +68,8 @@ logging:
     org:
       springframework:
         cache: TRACE
+    com:
+      netflix:
+        config:
+          sources:
+            URLConfigurationSource: ERROR
