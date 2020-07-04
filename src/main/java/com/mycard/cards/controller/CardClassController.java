@@ -2,38 +2,30 @@ package com.mycard.cards.controller;
 
 import com.mycard.cards.dto.CardClassDTO;
 import com.mycard.cards.dto.PostCardClassDTO;
-import com.mycard.cards.entity.CardClass;
 import com.mycard.cards.service.CardClassService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
-import org.modelmapper.ModelMapper;
-import org.modelmapper.TypeToken;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
+import javax.validation.constraints.NotNull;
 import java.net.URI;
-import java.util.List;
-import java.util.Optional;
 
 @RestController
 @RequestMapping("card-classes")
 @Api(value = "card class")
 public class CardClassController {
 
-    @Autowired
     private CardClassService cardClassService;
 
-    @Autowired
-    private ModelMapper modelMapper;
-
-    public CardClassController(CardClassService cardClassService, ModelMapper modelMapper) {
+    public CardClassController(CardClassService cardClassService) {
         this.cardClassService = cardClassService;
-        this.modelMapper = modelMapper;
     }
 
     @GetMapping
@@ -41,10 +33,11 @@ public class CardClassController {
     @ApiResponses(value = {
             @ApiResponse(code = 400, message = "Something went wrong")
     })
-    public ResponseEntity<List<CardClassDTO>> getCardClassList() {
-        final List<CardClass> cardClassList = this.cardClassService.getCardClassList();
-        return ResponseEntity.ok().body(this.modelMapper.map(cardClassList, new TypeToken<List<CardClassDTO>>() {
-        }.getType()));
+    public ResponseEntity<Page<CardClassDTO>> getCardClassList(
+            @RequestParam("pageSize") @NotNull Integer pageSize,
+            @RequestParam("pageNumber") @NotNull Integer pageNumber
+    ) {
+        return ResponseEntity.ok().body(cardClassService.getCardClassDTOPage(PageRequest.of(pageNumber, pageSize)));
     }
 
     @GetMapping("/{bin}")
@@ -54,10 +47,8 @@ public class CardClassController {
             @ApiResponse(code = 204, message = "Could not find card class")
     })
     public ResponseEntity<CardClassDTO> getCardClass(@PathVariable("bin") Long bin) {
-        final Optional<CardClass> optionalCardClass = this.cardClassService.getCardClass(bin);
-
-        return optionalCardClass
-                .map(cardClass -> ResponseEntity.ok().body(this.modelMapper.map(cardClass, CardClassDTO.class)))
+        return cardClassService.getCardClassDTO(bin)
+                .map(cardClassDTO -> ResponseEntity.ok().body(cardClassDTO))
                 .orElseGet(() -> ResponseEntity.noContent().build());
     }
 
@@ -66,11 +57,14 @@ public class CardClassController {
     @ApiResponses(value = {
             @ApiResponse(code = 400, message = "Something went wrong")
     })
-    public ResponseEntity<CardClassDTO> postCardClass(@Valid @RequestBody PostCardClassDTO postCardClassDTO, HttpServletRequest request) {
-        final CardClass savedCardClass = this.cardClassService.saveCardClass(this.modelMapper.map(postCardClassDTO, CardClass.class));
-        final URI location = URI.create(String.format(request.getRequestURI() + "/%s", savedCardClass.getBin()));
+    public ResponseEntity<CardClassDTO> postCardClass(
+            @Valid @RequestBody PostCardClassDTO postCardClassDTO,
+            HttpServletRequest request
+    ) {
+        final CardClassDTO cardClassDTO = cardClassService.saveCardClassDTO(postCardClassDTO);
+        final URI location = URI.create(String.format(request.getRequestURI() + "/%s", cardClassDTO.getBin()));
 
-        return ResponseEntity.created(location).body(this.modelMapper.map(savedCardClass, CardClassDTO.class));
+        return ResponseEntity.created(location).body(cardClassDTO);
     }
 
     @PutMapping
@@ -79,11 +73,9 @@ public class CardClassController {
             @ApiResponse(code = 400, message = "Something went wrong"),
             @ApiResponse(code = 409, message = "Unable to find Card Class for update")
     })
-    public ResponseEntity<CardClassDTO> putCardClass(@Valid @RequestBody CardClassDTO cardClassDTO) {
-        final Optional<CardClass> optionalCardClass = this.cardClassService.updateCardClass(this.modelMapper.map(cardClassDTO, CardClass.class));
-
-        return optionalCardClass
-                .map(cardClass -> ResponseEntity.ok().body(this.modelMapper.map(cardClass, CardClassDTO.class)))
+    public ResponseEntity<CardClassDTO> putCardClass(@Valid @RequestBody CardClassDTO cardClassRequest) {
+        return cardClassService.updateCardClassDTO(cardClassRequest)
+                .map(cardClassResponse -> ResponseEntity.ok().body(cardClassResponse))
                 .orElseGet(() -> ResponseEntity.status(409).build());
     }
 }

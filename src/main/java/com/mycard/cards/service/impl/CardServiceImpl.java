@@ -20,6 +20,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.function.Function;
 
 @Service
 @CacheConfig(cacheNames = "CardService")
@@ -39,10 +40,6 @@ public class CardServiceImpl implements CardService {
 
     public Page<Card> getCardPage(Pageable pageable) {
         return cardRepository.findAll(pageable);
-    }
-
-    public List<Card> getCardList(Pageable pageable) {
-        return getCardPage(pageable).getContent();
     }
 
     public Card saveCard(Card card) {
@@ -93,16 +90,13 @@ public class CardServiceImpl implements CardService {
     @HystrixCommand(threadPoolKey = "userCardDTOThreadPool")
     public Optional<CardDTO> getUserCardDTO(CardId cardId, Long userId) {
         return this.getUserCard(cardId, userId)
-                .map(card -> this.modelMapper.map(card, CardDTO.class));
+                .map(transformCardToCardDTOFunction());
     }
 
     @CacheEvict(key = "{#cardDTO.userId}")
     @HystrixCommand(threadPoolKey = "saveCardDTOThreadPool")
     public CardDTO saveCardDTO(PostCardDTO cardDTO) {
-        return this.modelMapper.map(
-                this.saveCard(this.modelMapper.map(cardDTO, Card.class)),
-                CardDTO.class
-        );
+        return transformCardToCardDTO(this.saveCard(this.modelMapper.map(cardDTO, Card.class)));
     }
 
     @Caching(
@@ -116,13 +110,21 @@ public class CardServiceImpl implements CardService {
     @HystrixCommand(threadPoolKey = "updateCardThreadPool")
     public Optional<CardDTO> updateCardDTO(CardDTO cardDTO) {
         return this.updateCard(this.modelMapper.map(cardDTO, Card.class))
-                .map(card -> this.modelMapper.map(card, CardDTO.class));
+                .map(transformCardToCardDTOFunction());
     }
 
     @HystrixCommand(threadPoolKey = "adminCardDTOPageThreadPool")
     public Page<CardDTO> getCardDTOPage(Pageable pageable) {
         return getCardPage(pageable)
-                .map(card -> modelMapper.map(card, CardDTO.class));
+                .map(transformCardToCardDTOFunction());
+    }
+
+    private Function<Card, CardDTO> transformCardToCardDTOFunction() {
+        return this::transformCardToCardDTO;
+    }
+
+    private CardDTO transformCardToCardDTO(Card card) {
+        return modelMapper.map(card, CardDTO.class);
     }
 
 }
