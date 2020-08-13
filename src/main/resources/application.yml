@@ -60,7 +60,7 @@ security:
   oauth2:
     resource:
       service-id: my-card-auth
-      user-info-uri: http://${security.oauth2.resource.service-id}/user
+      user-info-uri: http://${security.oauth2.resource.service-id}/token
       loadBalanced: true
 
 logging:

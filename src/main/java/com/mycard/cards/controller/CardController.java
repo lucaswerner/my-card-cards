@@ -84,7 +84,7 @@ public class CardController {
                 .orElseGet(() -> ResponseEntity.status(409).build());
     }
 
-    @GetMapping("/admin/{bin}/{number}/{userId}")
+    @GetMapping("/{bin}/{number}/{userId}")
     @ApiOperation(value = "GetCard")
     @ApiResponses(value = {
             @ApiResponse(code = 400, message = "Something went wrong"),
