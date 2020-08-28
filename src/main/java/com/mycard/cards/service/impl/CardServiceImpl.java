@@ -28,9 +28,9 @@ public class CardServiceImpl implements CardService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(CardServiceImpl.class);
 
-    private CardRepository cardRepository;
-    private CardClassService cardClassService;
-    private ModelMapper modelMapper;
+    private final CardRepository cardRepository;
+    private final CardClassService cardClassService;
+    private final ModelMapper modelMapper;
 
     public CardServiceImpl(CardRepository cardRepository, CardClassService cardClassService, ModelMapper modelMapper) {
         this.cardRepository = cardRepository;
@@ -43,7 +43,7 @@ public class CardServiceImpl implements CardService {
     }
 
     public Card saveCard(Card card) {
-        final Long bin = card.getCardId().getBin();
+        final Long bin = card.getBin();
         final CardClass cardClass = cardClassService.getCardClass(bin)
                 .orElseThrow(() -> new RuntimeException(String.format("Could not find Card Class with bin %s", bin)));
         card.setCardClass(cardClass);
@@ -53,14 +53,17 @@ public class CardServiceImpl implements CardService {
     }
 
     public Optional<Card> updateCard(Card card) {
-        final Optional<Card> optionalCardFromDB = this.getUserCard(card.getCardId(), card.getUserId());
+        final Optional<Card> optionalCardFromDB = this.getUserCard(
+                new CardId(card.getBin(), card.getNumber()),
+                card.getUserId()
+        );
 
         if (optionalCardFromDB.isEmpty()) {
             return optionalCardFromDB;
         }
 
         final Card cardFromDB = optionalCardFromDB.get();
-        cardFromDB.setFeature(card.getFeature());
+        cardFromDB.setBillDay(card.getBillDay());
         LOGGER.info("Updating card");
         return Optional.of(cardRepository.save(cardFromDB));
     }
@@ -69,8 +72,13 @@ public class CardServiceImpl implements CardService {
         return cardRepository.findAllByUserId(userId);
     }
 
+    @Override
+    public Optional<Card> getCardById(CardId id) {
+        return cardRepository.findById(id);
+    }
+
     public Optional<Card> getUserCard(CardId id, Long userId) {
-        return cardRepository.findByCardIdAndUserId(id, userId);
+        return cardRepository.findByBinAndNumberAndUserId(id.getBin(), id.getNumber(), userId);
     }
 
     private List<CardDTO> cardListToCardDTOList(List<Card> userCardList) {
@@ -93,6 +101,13 @@ public class CardServiceImpl implements CardService {
                 .map(transformCardToCardDTOFunction());
     }
 
+    @Cacheable(key = "{#id.bin, #id.number}")
+    @HystrixCommand(threadPoolKey = "cardDTOByIdThreadPool")
+    public Optional<CardDTO> getCardDTOById(CardId id) {
+        return getCardById(id)
+                .map(this::transformCardToCardDTO);
+    }
+
     @CacheEvict(key = "{#cardDTO.userId}")
     @HystrixCommand(threadPoolKey = "saveCardDTOThreadPool")
     public CardDTO saveCardDTO(PostCardDTO cardDTO) {
@@ -104,7 +119,8 @@ public class CardServiceImpl implements CardService {
                     @CacheEvict(key = "{#cardDTO.userId}")
             },
             put = {
-                    @CachePut(key = "{#cardDTO.bin, #cardDTO.number, #cardDTO.userId}")
+                    @CachePut(key = "{#cardDTO.bin, #cardDTO.number, #cardDTO.userId}"),
+                    @CachePut(key = "{#id.bin, #id.number}")
             }
     )
     @HystrixCommand(threadPoolKey = "updateCardThreadPool")
@@ -113,9 +129,15 @@ public class CardServiceImpl implements CardService {
                 .map(transformCardToCardDTOFunction());
     }
 
-    @HystrixCommand(threadPoolKey = "adminCardDTOPageThreadPool")
+    @HystrixCommand(threadPoolKey = "allCardDTOPageThreadPool")
     public Page<CardDTO> getCardDTOPage(Pageable pageable) {
         return getCardPage(pageable)
+                .map(transformCardToCardDTOFunction());
+    }
+
+    @HystrixCommand(threadPoolKey = "cardDTOPageByBillDtThreadPool")
+    public Page<CardDTO> getCardDTOPageByBillDt(Byte billDay, Pageable pageable) {
+        return cardRepository.findAllByBillDay(billDay, pageable)
                 .map(transformCardToCardDTOFunction());
     }
 

@@ -1,7 +1,6 @@
 package com.mycard.cards.entity;
 
 import com.mycard.cards.entity.id.CardId;
-import com.mycard.cards.enumeration.CardFeature;
 import lombok.Data;
 
 import javax.persistence.*;
@@ -9,15 +8,21 @@ import java.io.Serializable;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
+@Data
 @Entity
+@IdClass(CardId.class)
 @Table(name = "card")
-public @Data
-class Card implements Serializable {
+public class Card implements Serializable {
 
     private static final long serialVersionUID = -3106559627256167600L;
 
-    @EmbeddedId
-    private CardId cardId;
+    @Id
+    @Column(nullable = false, name = "bin")
+    private Long bin;
+
+    @Id
+    @Column(nullable = false, name = "number")
+    private Long number;
 
     @Column(nullable = false, name = "expiration")
     private LocalDate expiration;
@@ -25,11 +30,15 @@ class Card implements Serializable {
     @Column(nullable = false, name = "valid_from")
     private LocalDateTime validFrom;
 
-    @Column(nullable = false, name = "feature")
-    private CardFeature feature;
-
     @Column(nullable = false, name = "userId")
     private Long userId;
+
+    @Column(
+            name = "bill_day",
+            columnDefinition = "tinyint",
+            nullable = false
+    )
+    private Byte billDay;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @MapsId("bin")

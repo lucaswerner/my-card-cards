@@ -11,16 +11,16 @@ public class ResourceServerConfig extends ResourceServerConfigurerAdapter {
     @Override
     public void configure(HttpSecurity http) throws Exception {
         final String admin = "ADMIN";
-        final String[] adminAndSystem = {admin, "SYSTEM"};
+        final String system = "SYSTEM";
+        final String[] adminAndSystem = {admin, system};
 
         http
                 .httpBasic()
                 .and()
                 .authorizeRequests()
-                .antMatchers("/**/admin/**").hasRole(admin)
-                .antMatchers("/cards/{bin}/{number}/{userId}").hasAnyRole(adminAndSystem)
+                .antMatchers("/cards/bill-page").hasAnyRole(adminAndSystem)
+                .antMatchers("/cards/all/**").hasAnyRole(adminAndSystem)
                 .antMatchers("/card-classes/**").hasAnyRole(adminAndSystem)
-                .antMatchers("/card-fees/**").hasAnyRole(adminAndSystem)
                 .antMatchers(HttpMethod.POST).hasAuthority("WRITE_CARD")
                 .antMatchers(HttpMethod.GET).hasAuthority("READ_CARD")
                 .antMatchers(HttpMethod.PUT).hasAuthority("UPDATE_CARD");

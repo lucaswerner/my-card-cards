@@ -7,11 +7,11 @@ import org.modelmapper.PropertyMap;
 public class CardToCardDTO extends PropertyMap<Card, CardDTO> {
     @Override
     protected void configure() {
-        map().setNumber(source.getCardId().getNumber());
-        map().setBin(source.getCardId().getBin());
-        map().setFeature(source.getFeature());
-        map().setExpiration(source.getExpiration());
+        map().setBin(source.getBin());
+        map().setNumber(source.getNumber());
         map().setValidFrom(source.getValidFrom());
+        map().setExpiration(source.getExpiration());
+        map().setBillDay(source.getBillDay());
         map().setUserId(source.getUserId());
     }
 }

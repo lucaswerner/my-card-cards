@@ -1,6 +1,8 @@
 package com.mycard.cards.dto;
 
 import com.mycard.cards.enumeration.CardBrand;
+import com.mycard.cards.enumeration.CardCompetence;
+import com.mycard.cards.enumeration.CardFeature;
 import lombok.Data;
 
 import java.io.Serializable;
@@ -11,4 +13,6 @@ class CardClassDTO implements Serializable {
     private Long bin;
     private String name;
     private CardBrand cardBrand;
+    private CardFeature feature;
+    private CardCompetence competence;
 }

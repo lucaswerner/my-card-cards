@@ -1,6 +1,5 @@
 package com.mycard.cards.dto;
 
-import com.mycard.cards.enumeration.CardFeature;
 import lombok.Data;
 
 import java.io.Serializable;
@@ -15,6 +14,6 @@ class CardDTO implements Serializable {
     private Long number;
     private LocalDate expiration;
     private LocalDateTime validFrom;
-    private CardFeature feature;
+    private Byte billDay;
     private Long userId;
 }

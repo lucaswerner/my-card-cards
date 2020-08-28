@@ -12,10 +12,6 @@ public class ModelMapperConfig {
     public ModelMapper modelMapper() {
         ModelMapper modelMapper = new ModelMapper();
 
-        // card-fee
-        modelMapper.addMappings(new PostCardFeeDTOToCardFee());
-        modelMapper.addMappings(new CardFeeToCardFeeDTO());
-
         // card
         modelMapper.addMappings(new CardToCardDTO());
         modelMapper.addMappings(new CardDTOToCard());

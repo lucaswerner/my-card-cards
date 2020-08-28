@@ -11,6 +11,7 @@ import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
@@ -18,6 +19,7 @@ import org.springframework.web.bind.annotation.*;
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 import java.net.URI;
+import java.time.LocalDate;
 import java.util.List;
 
 @RestController
@@ -53,7 +55,9 @@ public class CardController {
             @PathVariable("number") Long number,
             Authentication authentication
     ) {
-        return this.getCard(bin, number, ((PrincipalDTO) authentication.getPrincipal()).getId());
+        return this.cardService.getUserCardDTO(new CardId(bin, number), ((PrincipalDTO) authentication.getPrincipal()).getId())
+                .map(card -> ResponseEntity.ok().body(card))
+                .orElseGet(() -> ResponseEntity.noContent().build());
     }
 
     @PostMapping
@@ -84,22 +88,21 @@ public class CardController {
                 .orElseGet(() -> ResponseEntity.status(409).build());
     }
 
-    @GetMapping("/{bin}/{number}/{userId}")
+    @GetMapping("/all/{bin}/{number}")
     @ApiOperation(value = "GetCard")
     @ApiResponses(value = {
             @ApiResponse(code = 400, message = "Something went wrong"),
     })
     public ResponseEntity<CardDTO> getCard(
             @PathVariable("bin") Long bin,
-            @PathVariable("number") Long number,
-            @PathVariable("userId") Long userId
+            @PathVariable("number") Long number
     ) {
-        return this.cardService.getUserCardDTO(new CardId(bin, number), userId)
+        return this.cardService.getCardDTOById(new CardId(bin, number))
                 .map(card -> ResponseEntity.ok().body(card))
                 .orElseGet(() -> ResponseEntity.noContent().build());
     }
 
-    @GetMapping("/admin")
+    @GetMapping("/all")
     @ApiOperation(value = "GetCardList")
     @ApiResponses(value = {
             @ApiResponse(code = 400, message = "Something went wrong")
@@ -111,6 +114,21 @@ public class CardController {
         return ResponseEntity
                 .ok()
                 .body(this.cardService.getCardDTOPage(PageRequest.of(pageNumber, pageSize)));
+    }
+
+    @GetMapping("/bill-page")
+    @ApiOperation(value = "GetCardPageByBillDt")
+    @ApiResponses(value = {
+            @ApiResponse(code = 400, message = "Something went wrong")
+    })
+    public ResponseEntity<Page<CardDTO>> getCardPageByBillDt(
+            @RequestParam("pageSize") Integer pageSize,
+            @RequestParam("pageNumber") Integer pageNumber,
+            @RequestParam("billDay") Byte billDay
+    ) {
+        return ResponseEntity
+                .ok()
+                .body(cardService.getCardDTOPageByBillDt(billDay, PageRequest.of(pageNumber, pageSize)));
     }
 
 }
