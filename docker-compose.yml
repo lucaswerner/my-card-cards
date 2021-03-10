@@ -1,0 +1,35 @@
+version: "3.3"
+
+services:
+  web-service:
+    build:
+      context: ./
+      dockerfile: Dockerfile
+    ports:
+      - "8080:8080"
+    networks:
+      - my-card-cards-network
+  db:
+    image: postgres:latest
+    restart: always
+    environment:
+      POSTGRES_DB: my_card_cards
+      POSTGRES_PASSWORD: my-card-cards-pwd
+    networks:
+      - my-card-cards-network
+  redis:
+    image: redis:6
+    deploy:
+      replicas: 1
+    configs:
+      - my_card_cards_redis_config
+    networks:
+      - my-card-cards-network
+
+configs:
+  my_card_cards_redis_config:
+    file: ./config/redis/cards.conf
+
+networks:
+  my-card-cards-network:
+    driver: bridge

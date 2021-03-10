@@ -120,7 +120,7 @@ public class CardServiceImpl implements CardService {
             },
             put = {
                     @CachePut(key = "{#cardDTO.bin, #cardDTO.number, #cardDTO.userId}"),
-                    @CachePut(key = "{#id.bin, #id.number}")
+                    @CachePut(key = "{#cardDTO.bin, #cardDTO.number}")
             }
     )
     @HystrixCommand(threadPoolKey = "updateCardThreadPool")

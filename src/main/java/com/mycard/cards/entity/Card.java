@@ -35,7 +35,7 @@ public class Card implements Serializable {
 
     @Column(
             name = "bill_day",
-            columnDefinition = "tinyint",
+            columnDefinition = "smallint",
             nullable = false
     )
     private Byte billDay;
